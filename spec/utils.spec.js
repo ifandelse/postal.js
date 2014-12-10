@@ -267,18 +267,18 @@ describe( "postal.utils", function() {
 					channel: "A",
 					topic: "some.topic",
 					callback: cb
-				} ), { thingy: "thangy" } ) );
+				} ), { thingy: "some/string/[value]" } ) );
 				subs.push( _.extend( postal.subscribe( {
 					channel: "B",
 					topic: "another.topic",
 					callback: cb
-				} ), { thingy: "thangy" } ) );
+				} ), { thingy: "some/string/[value]" } ) );
 				subs.push( _.extend( postal.subscribe( {
 					channel: "B",
 					topic: "even.more.topics",
 					callback: cb
-				} ), { thingy: "thangy" } ) );
-				postal.unsubscribeFor( { channel: "B", thingy: "thangy" } );
+				} ), { thingy: "some/string/[value]" } ) );
+				postal.unsubscribeFor( { channel: "B", thingy: "some/string/[value]" } );
 				postal.publish( {
 					channel: "B",
 					topic: "another.topic",
@@ -299,6 +299,7 @@ describe( "postal.utils", function() {
 				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
 				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
 				( postal.subscriptions.A[ "some.topic" ] ).should.be.ok;
+				postal.getSubscribersFor( { channel: "B", thingy: "some/string/[value]" } ).length.should.equal( 0 );
 			} );
 			it( "should have not invoked subscriber callbacks when publishing", function() {
 				res.should.equal( 0 );
@@ -348,6 +349,7 @@ describe( "postal.utils", function() {
 				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
 				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
 				( postal.subscriptions.A[ "some.topic" ] ).should.be.ok;
+				postal.getSubscribersFor( { channel: "B", thingy: objectyObj } ).length.should.equal( 0 );
 			} );
 			it( "should have not invoked subscriber callbacks when publishing", function() {
 				res.should.equal( 0 );
