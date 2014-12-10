@@ -229,17 +229,17 @@ _postal = {
 					}
 					idx += 1;
 				}
+				if ( topicSubs.length === 0 ) {
+					delete channelSubs[ subDef.topic ];
+					if ( _.isEmpty( channelSubs ) ) {
+						delete this.subscriptions[ subDef.channel ];
+					}
+				}
 				// remove SubscriptionDefinition from cache
 				if ( subDef.cacheKeys && subDef.cacheKeys.length ) {
 					var key;
 					while (key = subDef.cacheKeys.pop()) {
 						_.each( this.cache[ key ], getCachePurger( subDef, key, this.cache ) );
-					}
-				}
-				if ( topicSubs.length === 0 ) {
-					delete channelSubs[ subDef.topic ];
-					if ( _.isEmpty( channelSubs ) ) {
-						delete this.subscriptions[ subDef.channel ];
 					}
 				}
 			}

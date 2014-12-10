@@ -6,6 +6,51 @@ describe( "amqpBindingsResolver", function() {
 		before( function() {
 			bindingsResolver.reset();
 		} );
+		describe( "and caching comparisons", function() {
+			it( "should cache a passing comparison", function() {
+				bindingsResolver.compare( "test", "test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-test" );
+				bindingsResolver.cache[ "test-test" ].should.be.ok;
+			} );
+			it( "should cache a failing comparison", function() {
+				bindingsResolver.compare( "nope", "test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-nope" );
+				bindingsResolver.cache[ "test-nope" ].should.not.be.ok;
+			} );
+			it( "should purge the cache when calling purge with no arguments", function() {
+				bindingsResolver.compare( "test", "test" );
+				bindingsResolver.compare( "nope", "test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-nope" );
+				bindingsResolver.purge();
+				( bindingsResolver.cache ).should.be.empty;
+			} );
+			it( "should purge the topics specified when calling purge", function() {
+				bindingsResolver.compare( "test", "test" );
+				bindingsResolver.compare( "nope", "test" );
+				bindingsResolver.compare( "test", "nope" );
+				bindingsResolver.cache.should.have.ownProperty( "test-test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-nope" );
+				bindingsResolver.cache.should.have.ownProperty( "nope-test" );
+				bindingsResolver.purge( { topic: "test" } );
+				( bindingsResolver.cache ).should.have.ownProperty( "nope-test" );
+				bindingsResolver.cache.should.not.have.ownProperty( "test-test" );
+				bindingsResolver.cache.should.not.have.ownProperty( "test-nope" );
+
+			} );
+			it( "should purge the bindings specified when calling purge", function() {
+				bindingsResolver.compare( "test", "test" );
+				bindingsResolver.compare( "nope", "test" );
+				bindingsResolver.compare( "test", "nope" );
+				bindingsResolver.cache.should.have.ownProperty( "test-test" );
+				bindingsResolver.cache.should.have.ownProperty( "test-nope" );
+				bindingsResolver.cache.should.have.ownProperty( "nope-test" );
+				bindingsResolver.purge( { binding: "test" } );
+				( bindingsResolver.cache ).should.have.ownProperty( "test-nope" );
+				bindingsResolver.cache.should.not.have.ownProperty( "test-test" );
+				bindingsResolver.cache.should.not.have.ownProperty( "nope-test" );
+			} );
+		} );
 		describe( "With '*' wildcards", function() {
 			// Passing matches
 			describe( "With topic Top.Middle.Bottom and binding *.Middle.Bottom", function() {
@@ -150,7 +195,6 @@ describe( "amqpBindingsResolver", function() {
 					cached.should.not.be.ok;
 				} );
 			} );
-
 		} );
 		describe( "With '#' wildcards", function() {
 			// Passing matches
