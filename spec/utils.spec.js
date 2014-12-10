@@ -1,4 +1,4 @@
-/* global postal, _ */
+/* global global, postal, _ */
 var NO_OP = function() {};
 describe( "postal.utils", function() {
 	beforeEach( function() {
@@ -254,6 +254,103 @@ describe( "postal.utils", function() {
 			} );
 			it( "should have not invoked subscriber callbacks when publishing", function() {
 				res.should.equal( 1 );
+			} );
+		} );
+		describe( "with a custom string property", function() {
+			var subs = [];
+			var res = 0;
+			var cb = function() {
+				res += 1;
+			};
+			beforeEach( function() {
+				subs.push( _.extend( postal.subscribe( {
+					channel: "A",
+					topic: "some.topic",
+					callback: cb
+				} ), { thingy: "thangy" } ) );
+				subs.push( _.extend( postal.subscribe( {
+					channel: "B",
+					topic: "another.topic",
+					callback: cb
+				} ), { thingy: "thangy" } ) );
+				subs.push( _.extend( postal.subscribe( {
+					channel: "B",
+					topic: "even.more.topics",
+					callback: cb
+				} ), { thingy: "thangy" } ) );
+				postal.unsubscribeFor( { channel: "B", thingy: "thangy" } );
+				postal.publish( {
+					channel: "B",
+					topic: "another.topic",
+					data: {}
+				} );
+				postal.publish( {
+					channel: "B",
+					topic: "even.more.topics",
+					data: {}
+				} );
+			} );
+			afterEach( function() {
+				res = 0;
+				subs = [];
+				postal.reset();
+			} );
+			it( "should have removed correct subscribers", function() {
+				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
+				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
+				( postal.subscriptions.A[ "some.topic" ] ).should.be.ok;
+			} );
+			it( "should have not invoked subscriber callbacks when publishing", function() {
+				res.should.equal( 0 );
+			} );
+		} );
+		describe( "with a custom object property", function() {
+			var subs = [];
+			var res = 0;
+			var cb = function() {
+				res += 1;
+			};
+			var objectyObj = { greeting: "oh, hai" };
+			beforeEach( function() {
+				subs.push( _.extend( postal.subscribe( {
+					channel: "A",
+					topic: "some.topic",
+					callback: cb
+				} ), { thingy: objectyObj } ) );
+				subs.push( _.extend( postal.subscribe( {
+					channel: "B",
+					topic: "another.topic",
+					callback: cb
+				} ), { thingy: objectyObj } ) );
+				subs.push( _.extend( postal.subscribe( {
+					channel: "B",
+					topic: "even.more.topics",
+					callback: cb
+				} ), { thingy: objectyObj } ) );
+				postal.unsubscribeFor( { channel: "B", thingy: objectyObj } );
+				postal.publish( {
+					channel: "B",
+					topic: "another.topic",
+					data: {}
+				} );
+				postal.publish( {
+					channel: "B",
+					topic: "even.more.topics",
+					data: {}
+				} );
+			} );
+			afterEach( function() {
+				res = 0;
+				subs = [];
+				postal.reset();
+			} );
+			it( "should have removed correct subscribers", function() {
+				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
+				( typeof postal.subscriptions.B === "undefined" ).should.be.ok;
+				( postal.subscriptions.A[ "some.topic" ] ).should.be.ok;
+			} );
+			it( "should have not invoked subscriber callbacks when publishing", function() {
+				res.should.equal( 0 );
 			} );
 		} );
 	} );
