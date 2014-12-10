@@ -35,7 +35,7 @@ describe( "ChannelDefinition", function() {
 	describe( "when getting a ChannelDefinition instance", function() {
 		it( "should default the channel name if not specified", function() {
 			var ch = postal.channel();
-			ch.channel.should.equal( postal.configuration.DEFAULT_CHANNEL );
+			ch.channel.should.equal( postal.configuration().DEFAULT_CHANNEL );
 		} );
 	} );
 } );

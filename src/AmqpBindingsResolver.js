@@ -1,6 +1,8 @@
 /*jshint -W098 */
-/* global _postal */
-var bindingsResolver = {
+/* global _postal, _config */
+var keyDelimiter = _config.cacheKeyDelimiter;
+
+var bindingsResolver = _config.resolver = {
 	cache: {},
 	regex: {},
 
@@ -8,14 +10,15 @@ var bindingsResolver = {
 		var pattern;
 		var rgx;
 		var prevSegment;
-		var result = ( this.cache[ topic + "-" + binding ] );
+		var cacheKey = topic + keyDelimiter + binding;
+		var result = ( this.cache[ cacheKey ] );
 		// result is cached?
 		if ( result === true ) {
 			return result;
 		}
 		// plain string matching?
 		if ( binding.indexOf( "#" ) === -1 && binding.indexOf( "*" ) === -1 ) {
-			result = this.cache[ topic + "-" + binding ] = ( topic === binding );
+			result = this.cache[ cacheKey ] = ( topic === binding );
 			return result;
 		}
 		// ah, regex matching, then
@@ -37,7 +40,7 @@ var bindingsResolver = {
 				} ).join( "" ) + "$";
 			rgx = this.regex[ binding ] = new RegExp( pattern );
 		}
-		result = this.cache[ topic + "-" + binding ] = rgx.test( topic );
+		result = this.cache[ cacheKey ] = rgx.test( topic );
 		return result;
 	},
 
@@ -48,7 +51,7 @@ var bindingsResolver = {
 
 	purge: function( options ) {
 		var matchPredicate = function( val, key ) {
-			var split = key.split( "-" );
+			var split = key.split( _config.cacheKeyDelimiter );
 			var topic = split[ 0 ];
 			var binding = split[ 1 ];
 			if ( ( !options.topic || options.topic === topic ) &&

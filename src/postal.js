@@ -18,6 +18,15 @@
 
 	var _postal;
 	var prevPostal = global.postal;
+	var _defaultConfig = {
+		resolver: bindingsResolver,
+		DEFAULT_CHANNEL: "/",
+		SYSTEM_CHANNEL: "postal",
+		enableSystemMessages: true,
+		cacheKeyDelimiter: "|",
+		autoCompactResolver: false
+	};
+	var _config = _.extend({}, _defaultConfig);
 
 	//import("ChannelDefinition.js");
 	//import("SubscriptionDefinition.js");

@@ -1,8 +1,9 @@
-/* global bindingsResolver, ChannelDefinition, SubscriptionDefinition, _postal, prevPostal, global, Conduit */
+/* global ChannelDefinition, SubscriptionDefinition, _postal, prevPostal, global, _config, _defaultConfig */
 /*jshint -W020 */
 
 var pubInProgress = 0;
 var unSubQueue = [];
+var autoCompactIndex = 0;
 
 function clearUnSubQueue() {
 	while (unSubQueue.length) {
@@ -21,9 +22,9 @@ function getCachePurger( subDef, key, cache ) {
 	};
 }
 
-function getCacher( configuration, topic, cache, cacheKey, done ) {
+function getCacher( topic, cache, cacheKey, done ) {
 	return function( subDef ) {
-		if ( configuration.resolver.compare( subDef.topic, topic ) ) {
+		if ( _config.resolver.compare( subDef.topic, topic ) ) {
 			cache.push( subDef );
 			subDef.cacheKeys.push( cacheKey );
 			if ( done ) {
@@ -35,7 +36,7 @@ function getCacher( configuration, topic, cache, cacheKey, done ) {
 
 function getSystemMessage( kind, subDef ) {
 	return {
-		channel: _postal.configuration.SYSTEM_CHANNEL,
+		channel: _config.SYSTEM_CHANNEL,
 		topic: "subscription." + kind,
 		data: {
 			event: "subscription." + kind,
@@ -77,12 +78,11 @@ function getPredicate( options, resolver ) {
 
 _postal = {
 	cache: {},
-	configuration: {
-		resolver: bindingsResolver,
-		DEFAULT_CHANNEL: "/",
-		SYSTEM_CHANNEL: "postal",
-		enableSystemMessages: true,
-		cacheKeyDelimiter: "|"
+	configuration: function( cfg ) {
+		if ( cfg ) {
+			_config = _.defaults( _.extend( _config, cfg ), _defaultConfig );
+		}
+		return _config;
 	},
 	subscriptions: {},
 	wireTaps: [],
@@ -119,7 +119,7 @@ _postal = {
 		var self = this;
 		_.each( self.subscriptions, function( channel ) {
 			_.each( channel, function( subList ) {
-				result = result.concat( _.filter( subList, getPredicate( options, self.configuration.resolver ) ) );
+				result = result.concat( _.filter( subList, getPredicate( options, _config.resolver ) ) );
 			} );
 		} );
 		return result;
@@ -127,8 +127,7 @@ _postal = {
 
 	publish: function publish( envelope ) {
 		++pubInProgress;
-		var configuration = this.configuration;
-		var channel = envelope.channel = envelope.channel || configuration.DEFAULT_CHANNEL;
+		var channel = envelope.channel = envelope.channel || _config.DEFAULT_CHANNEL;
 		var topic = envelope.topic;
 		envelope.timeStamp = new Date();
 		if ( this.wireTaps.length ) {
@@ -136,12 +135,11 @@ _postal = {
 				tap( envelope.data, envelope, pubInProgress );
 			} );
 		}
-		var cacheKey = channel + configuration.cacheKeyDelimiter + topic;
+		var cacheKey = channel + _config.cacheKeyDelimiter + topic;
 		var cache = this.cache[ cacheKey ];
 		if ( !cache ) {
 			cache = this.cache[ cacheKey ] = [];
 			var cacherFn = getCacher(
-				configuration,
 				topic,
 				cache,
 				cacheKey, function( candidate ) {
@@ -163,16 +161,15 @@ _postal = {
 
 	reset: function reset() {
 		this.unsubscribeFor();
-		this.configuration.resolver.reset();
+		_config.resolver.reset();
 		this.subscriptions = {};
 	},
 
 	subscribe: function subscribe( options ) {
 		var subscriptions = this.subscriptions;
-		var subDef = new SubscriptionDefinition( options.channel || this.configuration.DEFAULT_CHANNEL, options.topic, options.callback );
+		var subDef = new SubscriptionDefinition( options.channel || _config.DEFAULT_CHANNEL, options.topic, options.callback );
 		var channel = subscriptions[ subDef.channel ];
 		var channelLen = subDef.channel.length;
-		var configuration = this.configuration;
 		var subs;
 		if ( !channel ) {
 			channel = subscriptions[ subDef.channel ] = {};
@@ -187,14 +184,13 @@ _postal = {
 		_.each( this.cache, function( list, cacheKey ) {
 			if ( cacheKey.substr( 0, channelLen ) === subDef.channel ) {
 				getCacher(
-					configuration,
-					cacheKey.split( configuration.cacheKeyDelimiter )[ 1 ],
+					cacheKey.split( _config.cacheKeyDelimiter )[ 1 ],
 					list,
 					cacheKey )( subDef );
 			}
 		} );
 		/* istanbul ignore else */
-		if ( this.configuration.enableSystemMessages ) {
+		if ( _config.enableSystemMessages ) {
 			this.publish( sysCreatedMessage( subDef ) );
 		}
 		return subDef;
@@ -243,11 +239,17 @@ _postal = {
 					}
 				}
 				// check to see if relevant resolver cache entries can be purged
-
-
-
+				var autoCompact = _config.autoCompactResolver === true ?
+					0 : typeof autoCompact === "number" ?
+						( autoCompact - 1 ) : -1;
+				if ( autoCompact >= 0 && autoCompact === autoCompactIndex ) {
+					_config.resolver.purge( { compact: true } );
+					autoCompactIndex = 0;
+				} else if ( autoCompact > 0 ) {
+					autoCompactIndex += 1;
+				}
 			}
-			if ( this.configuration.enableSystemMessages ) {
+			if ( _config.enableSystemMessages ) {
 				this.publish( sysRemovedMessage( subDef ) );
 			}
 		}
@@ -263,4 +265,4 @@ _postal = {
 	}
 };
 
-_postal.subscriptions[ _postal.configuration.SYSTEM_CHANNEL ] = {};
+_postal.subscriptions[ _config.SYSTEM_CHANNEL ] = {};
