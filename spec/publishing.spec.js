@@ -9,6 +9,7 @@ describe( "postal.js - publishing", function() {
 				data: { weeping: true }
 			} );
 			postal.cache.should.have.property( "Doctor|Dont.Blink" );
+			postal.configuration.resolver.should.have.property( "Dont.Blink-Dont.Blink" );
 		} );
 	} );
 } );

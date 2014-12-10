@@ -235,13 +235,17 @@ _postal = {
 						delete this.subscriptions[ subDef.channel ];
 					}
 				}
-				// remove SubscriptionDefinition from cache
+				// remove SubscriptionDefinition from postal cache
 				if ( subDef.cacheKeys && subDef.cacheKeys.length ) {
 					var key;
 					while (key = subDef.cacheKeys.pop()) {
 						_.each( this.cache[ key ], getCachePurger( subDef, key, this.cache ) );
 					}
 				}
+				// check to see if relevant resolver cache entries can be purged
+
+
+
 			}
 			if ( this.configuration.enableSystemMessages ) {
 				this.publish( sysRemovedMessage( subDef ) );
