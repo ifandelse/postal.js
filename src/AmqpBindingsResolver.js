@@ -6,19 +6,22 @@ var bindingsResolver = _config.resolver = {
 	cache: {},
 	regex: {},
 
-	compare: function compare( binding, topic ) {
+	compare: function compare( binding, topic, options ) {
 		var pattern;
 		var rgx;
 		var prevSegment;
 		var cacheKey = topic + keyDelimiter + binding;
 		var result = ( this.cache[ cacheKey ] );
+		var opt = options || {};
 		// result is cached?
 		if ( result === true ) {
 			return result;
 		}
 		// plain string matching?
 		if ( binding.indexOf( "#" ) === -1 && binding.indexOf( "*" ) === -1 ) {
-			result = this.cache[ cacheKey ] = ( topic === binding );
+			if ( !opt.preventCache ) {
+				result = this.cache[ cacheKey ] = ( topic === binding );
+			}
 			return result;
 		}
 		// ah, regex matching, then
@@ -40,7 +43,9 @@ var bindingsResolver = _config.resolver = {
 				} ).join( "" ) + "$";
 			rgx = this.regex[ binding ] = new RegExp( pattern );
 		}
-		result = this.cache[ cacheKey ] = rgx.test( topic );
+		if ( !opt.preventCache ) {
+			result = this.cache[ cacheKey ] = rgx.test( topic );
+		}
 		return result;
 	},
 
@@ -50,27 +55,29 @@ var bindingsResolver = _config.resolver = {
 	},
 
 	purge: function( options ) {
+		var self = this;
 		var matchPredicate = function( val, key ) {
-			var split = key.split( _config.cacheKeyDelimiter );
+			var split = key.split( keyDelimiter );
 			var topic = split[ 0 ];
 			var binding = split[ 1 ];
-			if ( ( !options.topic || options.topic === topic ) &&
-					( !options.binding || options.binding === binding ) ) {
-				delete this.cache[ key ];
+			if ( ( typeof options.topic === "undefined" || options.topic === topic ) &&
+					( typeof options.binding === "undefined" || options.binding === binding ) ) {
+				delete self.cache[ key ];
 			}
 		};
 
 		var compactPredicate = function( val, key ) {
-			var split = key.split( "-" );
+			var split = key.split( keyDelimiter );
 			if ( _postal.getSubscribersFor( { topic: split[ 0 ] } ).length === 0 ) {
-				delete this.cache[ key ];
+				delete self.cache[ key ];
 			}
 		};
 
-		if ( !options ) {
+		if ( typeof options === "undefined" ) {
 			this.reset();
 		} else {
-			_.each( this.cache, options.compact ? compactPredicate : matchPredicate, this );
+			var handler = options.compact === true ? compactPredicate : matchPredicate;
+			_.each( this.cache, handler );
 		}
 	}
 };

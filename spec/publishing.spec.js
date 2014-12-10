@@ -60,36 +60,53 @@ describe( "postal.js - publishing", function() {
 		} );
 	} );
 	describe( "when autoCompactResolver is set to a number", function() {
-		before( function() {
+		beforeEach( function() {
 			postal.reset();
 			postal.configuration( { autoCompactResolver: 2 } );
 		} );
-		after( function() {
+		afterEach( function() {
 			postal.configuration( { autoCompactResolver: false } );
 		} );
 		it( "should compact the resolver cache once the unsubscribe threshold has been reached", function() {
 			var subA = postal.subscribe( { channel: "clara", topic: "run.you.clever.*", callback: function() {} } );
 			var subB = postal.subscribe( { channel: "rose", topic: "bad.wolf", callback: function() {} } );
 			var subC = postal.subscribe( { channel: "amy", topic: "raggedy.*", callback: function() {} } );
+			var subD = postal.subscribe( { channel: "rory", topic: "roman.centurion", callback: function() {} } );
 			postal.publish( { channel: "clara", topic: "run.you.clever.boy", data: "RYCB" } );
 			postal.publish( { channel: "clara", topic: "run.you.clever.doctor", data: "RYCB" } );
 			postal.publish( { channel: "rose", topic: "bad.wolf", data: "bad wolf" } );
 			postal.publish( { channel: "amy", topic: "raggedy.man", data: "girl who waited" } );
 			postal.publish( { channel: "amy", topic: "raggedy.doctor", data: "girl who waited" } );
+			postal.publish( { channel: "rory", topic: "roman.centurion", data: "" } );
 			postal.configuration().resolver.cache.should.have.ownProperty( "run.you.clever.boy|run.you.clever.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "run.you.clever.doctor|run.you.clever.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "bad.wolf|bad.wolf" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.man|raggedy.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.doctor|raggedy.*" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "roman.centurion|roman.centurion" );
 			subA.unsubscribe();
 			postal.configuration().resolver.cache.should.have.ownProperty( "run.you.clever.boy|run.you.clever.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "run.you.clever.doctor|run.you.clever.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "bad.wolf|bad.wolf" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.man|raggedy.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.doctor|raggedy.*" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "roman.centurion|roman.centurion" );
 			subB.unsubscribe();
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "run.you.clever.boy|run.you.clever.*" );
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "run.you.clever.doctor|run.you.clever.*" );
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "bad.wolf|bad.wolf" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.man|raggedy.*" );
 			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.doctor|raggedy.*" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "roman.centurion|roman.centurion" );
+			subC.unsubscribe();
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "run.you.clever.boy|run.you.clever.*" );
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "run.you.clever.doctor|run.you.clever.*" );
+			postal.configuration().resolver.cache.should.not.have.ownProperty( "bad.wolf|bad.wolf" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.man|raggedy.*" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "raggedy.doctor|raggedy.*" );
+			postal.configuration().resolver.cache.should.have.ownProperty( "roman.centurion|roman.centurion" );
+			subD.unsubscribe();
+			postal.configuration().resolver.cache.should.be.empty;
 		} );
 	} );
 } );

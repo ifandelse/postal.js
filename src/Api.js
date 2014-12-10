@@ -64,7 +64,7 @@ function getPredicate( options, resolver ) {
 				compared += 1;
 				if (
 				// We use the bindings resolver to compare the options.topic to subDef.topic
-				( prop === "topic" && resolver.compare( sub.topic, options.topic ) )
+				( prop === "topic" && resolver.compare( sub.topic, options.topic, { preventCache: true } ) )
 						|| ( prop === "context" && options.context === sub._context )
 						// Any other potential prop/value matching outside topic & context...
 						|| ( sub[ prop ] === options[ prop ] ) ) {
@@ -240,12 +240,12 @@ _postal = {
 				}
 				// check to see if relevant resolver cache entries can be purged
 				var autoCompact = _config.autoCompactResolver === true ?
-					0 : typeof autoCompact === "number" ?
-						( autoCompact - 1 ) : -1;
-				if ( autoCompact >= 0 && autoCompact === autoCompactIndex ) {
+					0 : typeof _config.autoCompactResolver === "number" ?
+						( _config.autoCompactResolver - 1 ) : false;
+				if ( autoCompact >= 0 && autoCompactIndex === autoCompact ) {
 					_config.resolver.purge( { compact: true } );
 					autoCompactIndex = 0;
-				} else if ( autoCompact > 0 ) {
+				} else if ( autoCompact >= 0 && autoCompactIndex < autoCompact ) {
 					autoCompactIndex += 1;
 				}
 			}
