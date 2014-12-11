@@ -16,17 +16,18 @@
 	}
 }( this, function( _, global, undefined ) {
 
-	var _postal;
 	var prevPostal = global.postal;
 	var _defaultConfig = {
-		resolver: bindingsResolver,
 		DEFAULT_CHANNEL: "/",
 		SYSTEM_CHANNEL: "postal",
 		enableSystemMessages: true,
 		cacheKeyDelimiter: "|",
 		autoCompactResolver: false
 	};
-	var _config = _.extend({}, _defaultConfig);
+	var postal = {
+		configuration: _.extend( {}, _defaultConfig )
+	};
+	var _config = postal.configuration;
 
 	//import("ChannelDefinition.js");
 	//import("SubscriptionDefinition.js");
@@ -36,10 +37,10 @@
 	/*jshint -W106 */
 	if ( global && Object.prototype.hasOwnProperty.call( global, "__postalReady__" ) && _.isArray( global.__postalReady__ ) ) {
 		while (global.__postalReady__.length) {
-			global.__postalReady__.shift().onReady( _postal );
+			global.__postalReady__.shift().onReady( postal );
 		}
 	}
 	/*jshint +W106 */
 
-	return _postal;
+	return postal;
 } ));

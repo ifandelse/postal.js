@@ -1,4 +1,4 @@
-/* global ChannelDefinition, SubscriptionDefinition, _postal, prevPostal, global, _config, _defaultConfig */
+/* global ChannelDefinition, SubscriptionDefinition, postal, prevPostal, global, _defaultConfig */
 /*jshint -W020 */
 
 var pubInProgress = 0;
@@ -7,7 +7,7 @@ var autoCompactIndex = 0;
 
 function clearUnSubQueue() {
 	while (unSubQueue.length) {
-		_postal.unsubscribe( unSubQueue.shift() );
+		postal.unsubscribe( unSubQueue.shift() );
 	}
 }
 
@@ -76,14 +76,8 @@ function getPredicate( options, resolver ) {
 	}
 }
 
-_postal = {
+_.extend( postal, {
 	cache: {},
-	configuration: function( cfg ) {
-		if ( cfg ) {
-			_config = _.defaults( _.extend( _config, cfg ), _defaultConfig );
-		}
-		return _config;
-	},
 	subscriptions: {},
 	wireTaps: [],
 
@@ -263,6 +257,4 @@ _postal = {
 			this.unsubscribe.apply( this, toDispose );
 		}
 	}
-};
-
-_postal.subscriptions[ _config.SYSTEM_CHANNEL ] = {};
+} );

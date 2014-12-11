@@ -1,5 +1,5 @@
 /* global postal */
-var bindingsResolver = postal.configuration().resolver;
+var bindingsResolver = postal.configuration.resolver;
 
 describe( "amqpBindingsResolver", function() {
 	describe( "When calling compare", function() {
@@ -128,20 +128,20 @@ describe( "amqpBindingsResolver", function() {
 				var result = bindingsResolver.compare( "*.Middle.Bottom", "Top.Middle.SubMiddle.Bottom" ),
 					cached = bindingsResolver.cache[ "Top.Middle.SubMiddle.Bottom|*.Middle.Bottom" ];
 				it( "Result should be false", function() {
-					result.should.not.be.ok
+					result.should.not.be.ok;
 				} );
 				it( "Should *not* create a resolver cache entry", function() {
-					cached.should.not.be.ok
+					cached.should.not.be.ok;
 				} );
 			} );
 			describe( "With topic Top.Middle.SubMiddle.Bottom and binding Top.*.Bottom", function() {
 				var result = bindingsResolver.compare( "Top.*.Bottom", "Top.Middle.SubMiddle.Bottom" ),
 					cached = bindingsResolver.cache[ "Top.Middle.SubMiddle.Bottom|Top.*.Bottom" ];
 				it( "Result should be false", function() {
-					result.should.not.be.ok
+					result.should.not.be.ok;
 				} );
 				it( "Should *not* create a resolver cache entry", function() {
-					cached.should.not.be.ok
+					cached.should.not.be.ok;
 				} );
 			} );
 			describe( "With topic Top.Middle.SubMiddle.Bottom and binding Top.Middle.*", function() {

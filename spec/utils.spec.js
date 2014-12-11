@@ -36,7 +36,7 @@ describe( "postal.utils", function() {
 			subscription = postal.channel( "MyChannel" ).subscribe( "MyTopic", function() {} );
 			postal.channel( "MyChannel" ).publish( "MyTopic", "Oh Hai!" );
 			sub = postal.subscriptions.MyChannel.MyTopic[ 0 ];
-			resolver = postal.configuration().resolver.cache[ "MyTopic-MyTopic" ];
+			resolver = postal.configuration.resolver.cache[ "MyTopic-MyTopic" ];
 			postal.reset();
 		} );
 		after( function() {} );
@@ -49,7 +49,7 @@ describe( "postal.utils", function() {
 			_.isEmpty( postal.subscriptions ).should.be.ok;
 		} );
 		it( "resolver cache should now be empty", function() {
-			_.isEmpty( postal.configuration().resolver.cache ).should.be.ok;
+			_.isEmpty( postal.configuration.resolver.cache ).should.be.ok;
 		} );
 	} );
 	describe( "When calling postal.unsubscribeFor", function() {

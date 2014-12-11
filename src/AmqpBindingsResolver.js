@@ -1,5 +1,5 @@
 /*jshint -W098 */
-/* global _postal, _config */
+/* global postal, _config */
 var keyDelimiter = _config.cacheKeyDelimiter;
 
 var bindingsResolver = _config.resolver = {
@@ -68,7 +68,7 @@ var bindingsResolver = _config.resolver = {
 
 		var compactPredicate = function( val, key ) {
 			var split = key.split( keyDelimiter );
-			if ( _postal.getSubscribersFor( { topic: split[ 0 ] } ).length === 0 ) {
+			if ( postal.getSubscribersFor( { topic: split[ 0 ] } ).length === 0 ) {
 				delete self.cache[ key ];
 			}
 		};

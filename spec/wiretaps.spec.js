@@ -48,7 +48,7 @@ describe( "wiretaps", function() {
 			wireTapData[ 0 ].should.equal( "I'm in yer bus, tappin' yer subscriptionz..." );
 		} );
 		it( "wireTap envelope should match expected results", function() {
-			wireTapEnvelope[ 0 ].channel.should.equal( postal.configuration().DEFAULT_CHANNEL );
+			wireTapEnvelope[ 0 ].channel.should.equal( postal.configuration.DEFAULT_CHANNEL );
 			wireTapEnvelope[ 0 ].topic.should.equal( "Oh.Hai.There" );
 		} );
 		it( "wireTap nesting should match expected results", function() {
